@@ -7,15 +7,24 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum PROVIDER {
+  KAKAO
+  NAVER
+  GOOGLE
+}
+
 model User {
   userId  Int    @id @default(autoincrement()) @map("USER_ID")
   name    String @default("unknown name") @map("NAME") @db.VarChar(10)
   email   String @map("EMAIL") @db.VarChar(50)
   profile String @map("PROFILE") @db.Text
+  provider PROVIDER
 
   posts    Post[]    @relation("USER_HAVE_MANY_POST")
   userInfo UserInfo? @relation("USER_DETAIL_INFO")
 
+  @@unique(fields: [provider, email], name:"provider_email_uni", map: "USER_PROVIDER_EMAIL_UNI")
+  @@index(fields: [provider, email], map: "USER_PROVIDER_EMAIL_INX")
   @@map("USER")
 }
 
@@ -42,5 +51,6 @@ model UserInfo {
 
   user User @relation("USER_DETAIL_INFO", fields: [userId], references: [userId], onDelete: SetDefault, onUpdate: Cascade)
 
+  @@index(fields: [height], map: "USER_INFO_IDX")
   @@map("USER_INFO")
 }
