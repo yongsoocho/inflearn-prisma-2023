@@ -1,32 +1,62 @@
 import { PrismaService } from './prisma/prisma.service';
 import { Injectable } from '@nestjs/common';
 import { faker } from '@faker-js/faker';
-import { Prisma } from '@prisma/client';
+import { Prisma, UserInfo } from '@prisma/client';
 
 @Injectable()
 export class AppService {
   constructor(private readonly prisma: PrismaService) {}
 
-  registerUser(payload: Prisma.UserCreateInput) {
-    return this.prisma.user.create({
-      data: {
-        // name: payload.name ?? '이름없음',
-        name:
-          Math.random() > 0.5 ? faker.name.fullName().slice(0, 9) : '이름없음',
-        email: faker.internet.email(),
-        profile: faker.lorem.lines(),
-        posts: {
-          connect: [
-            { postId: 11 },
-            { postId: 12 },
-            { postId: 13 },
-            { postId: 14 },
-            { postId: 15 },
-            { postId: 16 },
-          ],
-        },
+  async findUser(name, userId) {
+    // const result = await this.prisma.user.findUnique({
+    //   where: {
+    //     userId: Number(userId),
+    //   },
+    // });
+
+    const result = await this.prisma.user.findMany({
+      where: { name },
+      include: {
+        userInfo: true,
       },
     });
+
+    if (!result || !result.length) {
+      return '결과없음';
+    }
+
+    return result;
+  }
+
+  async registerUser(payload: Prisma.UserCreateInput) {
+    // return this.prisma.user.create({
+    //   data: {
+    //     // name: payload.name ?? '이름없음',
+    //     name:
+    //       Math.random() > 0.5 ? faker.name.fullName().slice(0, 9) : '이름없음',
+    //     email: faker.internet.email(),
+    //     profile: faker.lorem.lines(),
+    //     posts: {
+    //       connect: [
+    //         { postId: 11 },
+    //         { postId: 12 },
+    //         { postId: 13 },
+    //         { postId: 14 },
+    //         { postId: 15 },
+    //         { postId: 16 },
+    //       ],
+    //     },
+    //   },
+    // });
+    const data: Prisma.UserCreateInput[] = new Array(1000000)
+      .fill({})
+      .map((e) => ({
+        name: faker.name.fullName().slice(0, 9),
+        email: faker.internet.email(),
+        profile: faker.lorem.sentences(),
+      }));
+
+    return this.prisma.user.createMany({ data });
   }
 
   deleteUser() {
@@ -42,44 +72,66 @@ export class AppService {
     //   where: { userId: 1 },
     //   data: { name: 'unknown' },
     // });
-    return this.prisma.userInfo.update({
-      where: { userId: 999 },
-      data: { weight: { set: 10 } },
+    // return this.prisma.userInfo.update({
+    //   where: { userId: 999 },
+    //   data: { weight: { set: 10 } },
+    // });
+    return this.prisma.user.upsert({
+      where: {
+        userId: 32,
+      },
+      update: {
+        name: 'upsert!',
+      },
+      create: {
+        name: 'upsert@',
+        email: '@inflearn.com',
+        profile: 'watch my profile!',
+      },
     });
   }
 
   registerUserWithInfo(payload: Prisma.UserCreateInput) {
-    return this.prisma.user.create({
-      data: {
-        name:
-          Math.random() > 0.5 ? faker.name.fullName().slice(0, 9) : '이름없음',
-        email: faker.internet.email(),
-        profile: faker.lorem.lines(),
-        userInfo: {
-          create: {
-            height: '173',
-            weight: 80,
-            address: faker.address.buildingNumber(),
-          },
-        },
-      },
+    // return this.prisma.user.create({
+    //   data: {
+    //     name:
+    //       Math.random() > 0.5 ? faker.name.fullName().slice(0, 9) : '이름없음',
+    //     email: faker.internet.email(),
+    //     profile: faker.lorem.lines(),
+    //     userInfo: {
+    //       create: {
+    //         height: '173',
+    //         weight: 80,
+    //         address: faker.address.buildingNumber(),
+    //       },
+    //     },
+    //   },
+    // });
+    let i = 1000277;
+    const data = [];
+    while (i <= 2000276) {
+      data.push({
+        userId: i,
+        height: String(faker.datatype.number({ min: 100, max: 200 })),
+        weight: faker.datatype.number({ min: 40, max: 200 }),
+        address: faker.address.city(),
+      });
+      i++;
+    }
+    return this.prisma.userInfo.createMany({
+      data,
     });
   }
 
   createPost(payload) {
-    // const posts: Prisma.PostUncheckedCreateInput[] = new Array(20)
-    //   .fill({})
-    //   .map((e) => ({
-    //     writerId: Math.round(Math.random() * 100),
-    //     content: faker.lorem.paragraph(),
-    //   }));
-
-    // return posts;
-    return this.prisma.post.create({
-      data: {
-        writerId: Math.round(Math.random() * 21),
+    const data: Prisma.PostUncheckedCreateInput[] = new Array(1000000)
+      .fill({})
+      .map(() => ({
+        writerId: Math.round(Math.random() * 1000000) + 1000277,
         content: faker.lorem.paragraph(),
-      },
+      }));
+    return this.prisma.post.createMany({
+      data,
     });
   }
 

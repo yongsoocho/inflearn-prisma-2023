@@ -10,7 +10,7 @@ datasource db {
 model User {
   userId  Int    @id @default(autoincrement()) @map("USER_ID")
   name    String @default("unknown name") @map("NAME") @db.VarChar(10)
-  email   String @unique @map("EMAIL") @db.VarChar(50)
+  email   String @map("EMAIL") @db.VarChar(50)
   profile String @map("PROFILE") @db.Text
 
   posts    Post[]    @relation("USER_HAVE_MANY_POST")

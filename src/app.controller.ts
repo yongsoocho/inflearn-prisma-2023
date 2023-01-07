@@ -1,9 +1,22 @@
-import { Body, Controller, Delete, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { AppService } from './app.service';
 
 @Controller()
 export class AppController {
   constructor(private readonly appService: AppService) {}
+
+  @Get('user')
+  findUser(@Query('userId') userId, @Query('name') name) {
+    return this.appService.findUser(name, userId);
+  }
 
   @Post('user')
   registerUser(@Body() payload) {
