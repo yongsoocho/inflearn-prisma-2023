@@ -180,4 +180,24 @@ export class AppService {
   createPostConnect(payload) {
     return;
   }
+
+  async transactionPractice() {
+    /**
+    @Version 4.7 밑
+    return await this.prisma.$transaction(
+      [this.prisma.user.findFirst({}), this.prisma.post.findFirst({})],
+      {
+        isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+      },
+    );
+    */
+
+    /** @Version 4.7 부터 */
+    return await this.prisma.$transaction(async (prisma) => {
+      const user = await prisma.user.findFirst({});
+      const user2 = await prisma.user.findFirst({});
+
+      return user;
+    });
+  }
 }

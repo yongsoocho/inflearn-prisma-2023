@@ -57,4 +57,9 @@ export class AppController {
   createPostConnect(@Body() payload) {
     return this.appService.createPostConnect(payload);
   }
+
+  @Get('trans')
+  transactionPractice() {
+    return this.appService.transactionPractice();
+  }
 }
