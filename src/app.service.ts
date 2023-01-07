@@ -16,8 +16,21 @@ export class AppService {
 
     const result = await this.prisma.user.findMany({
       where: { name },
-      include: {
-        userInfo: true,
+      select: {
+        name: true,
+        email: true,
+        userInfo: {
+          select: {
+            height: true,
+            weight: true,
+          },
+        },
+        posts: {
+          select: {
+            postId: true,
+            content: true,
+          },
+        },
       },
     });
 
@@ -121,6 +134,21 @@ export class AppService {
     return this.prisma.userInfo.createMany({
       data,
     });
+  }
+
+  async postPagnation(page) {
+    const [count, posts] = await Promise.all([
+      this.prisma.post.count(),
+      this.prisma.post.findMany({
+        take: 10,
+        skip: 10 * (page - 1),
+        orderBy: {
+          postId: 'desc',
+        },
+      }),
+    ]);
+
+    return { count, current: page, posts };
   }
 
   createPost(payload) {

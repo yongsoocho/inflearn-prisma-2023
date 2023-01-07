@@ -38,6 +38,11 @@ export class AppController {
     return this.appService.registerUserWithInfo(payload);
   }
 
+  @Get('post')
+  postPagnation(@Query('page') page) {
+    return this.appService.postPagnation(Number(page));
+  }
+
   @Post('post')
   createPost(@Body() payload) {
     return this.appService.createPost(payload);
