@@ -1,16 +1,20 @@
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  schemas  = ["study", "sub"]
 }
 
 enum PROVIDER {
   KAKAO
   NAVER
   GOOGLE
+
+  @@schema("study")
 }
 
 model User {
@@ -25,7 +29,17 @@ model User {
 
   @@unique(fields: [provider, email], name:"provider_email_uni", map: "USER_PROVIDER_EMAIL_UNI")
   @@index(fields: [provider, email], map: "USER_PROVIDER_EMAIL_INX")
+
   @@map("USER")
+  @@schema("study")
+}
+
+model Hi {
+  userId  Int    @id @default(autoincrement()) @map("USER_ID")
+  name    String @default("unknown name") @map("NAME") @db.VarChar(10)
+
+  @@map("HI")
+  @@schema("sub")
 }
 
 model Post {
@@ -36,6 +50,7 @@ model Post {
   writer User? @relation("USER_HAVE_MANY_POST", fields: [writerId], references: [userId], onDelete: SetNull)
 
   @@map("POST")
+  @@schema("study")
 }
 
 // 1. user info 상세정보 테이블 대문자 스네이크 케이스로 만들기 
@@ -51,6 +66,8 @@ model UserInfo {
 
   user User @relation("USER_DETAIL_INFO", fields: [userId], references: [userId], onDelete: SetDefault, onUpdate: Cascade)
 
-  @@index(fields: [height], map: "USER_INFO_IDX")
+  @@index(fields: [height], map: "USER_INFO_IDX", type: Hash)
+
   @@map("USER_INFO")
+  @@schema("study")
 }

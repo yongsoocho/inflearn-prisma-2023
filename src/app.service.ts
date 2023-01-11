@@ -191,7 +191,7 @@ export class AppService {
       },
     );
     */
-
+    const hi = await this.prisma.hi.findMany;
     /** @Version 4.7 부터 */
     return await this.prisma.$transaction(async (prisma) => {
       const user = await prisma.user.findFirst({});
