@@ -10,7 +10,7 @@ datasource db {
 model User {
   userId  Int    @id @default(autoincrement()) @map("USER_ID")
   name    String @default("unknown name") @map("NAME") @db.VarChar(10)
-  email   String @unique @map("EMAIL") @db.VarChar(50)
+  email   String @default(uuid()) @map("EMAIL") @db.VarChar(50)
   profile String @map("PROFILE") @db.Text
 
   posts    Post[]    @relation("USER_HAVE_MANY_POST")
@@ -22,9 +22,9 @@ model User {
 model Post {
   postId   Int    @id @default(autoincrement()) @map("POST_ID")
   content  String @map("CONTENT") @db.Text
-  writerId Int    @map("WRITER_ID")
+  writerId Int?   @map("WRITER_ID")
 
-  writer User @relation("USER_HAVE_MANY_POST", fields: [writerId], references: [userId])
+  writer User? @relation("USER_HAVE_MANY_POST", fields: [writerId], references: [userId], onDelete: SetNull)
 
   @@map("POST")
 }
@@ -34,13 +34,14 @@ model Post {
 // 2. USER 와 1대1 관계 맺기 (관계 이름 도메인은 대문자 스네이크로 user detail info 로)
 
 model UserInfo {
-  userId    Int      @id @map("USER_ID")
+  userId    Int      @id @map("USER_ID") @default(1)
   height    String   @map("HEIGHT") @db.Char(3)
   weight    Int      @map("WEIGHT") @db.Integer
   address   String   @map("ADR") @db.Text
   createdAt DateTime @default(now()) @db.Timestamptz()
+  updatedAt DateTime @updatedAt
 
-  user User @relation("USER_DETAIL_INFO", fields: [userId], references: [userId], onDelete: Cascade)
+  user User @relation("USER_DETAIL_INFO", fields: [userId], references: [userId], onDelete: SetDefault, onUpdate: Cascade)
 
   @@map("USER_INFO")
 }
