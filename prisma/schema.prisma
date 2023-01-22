@@ -7,38 +7,10 @@ datasource db {
   url      = env("DATABASE_URL_MONGO")
 }
 
-model User {
-  userId    String   @id @default(auto()) @map("_id") @db.ObjectId
-  age       Int      @db.Int
-  credit    Float    @db.Double
-  createdAt DateTime @default(now()) @db.Timestamp
-  role      UserRole
-
-  posts Post[] @relation("POST_AUTHOR_USER")
-
-  @@map("user")
-}
-
-model Post {
-  postId   String @id @default(auto()) @map("_id") @db.ObjectId
-  content  Bytes  @db.BinData
-  comments Json   @db.Json
-
-  author   User   @relation("POST_AUTHOR_USER", references: [userId], fields: [authorId])
-  authorId String @db.ObjectId
-
-  info PostInfo
-
-  @@map("post")
-}
-
-enum UserRole {
-  ADMIN
-  MANAGER
-  USER
-}
-
-type PostInfo {
-  title   String
-  hashtag String?
+model user {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  age       Int
+  createdAt DateTime
+  height    Float
+  role      String
 }

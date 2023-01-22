@@ -11,7 +11,7 @@ export class MongoService {
 
   async createUser(_) {
     const newUser = await this.prisma.user.create({
-      data: { age: 0, credit: 0, role: 'USER' },
+      data: { age: 0, height: 0, role: 'USER' },
     });
 
     return newUser;

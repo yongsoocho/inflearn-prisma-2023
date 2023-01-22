@@ -1,3 +1,5 @@
+import { ObjectId } from 'bson';
+import { ERole, UserEntity } from './mongo.builder';
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { MongoService } from './mongo.service';
 
@@ -7,6 +9,14 @@ export class MongoController {
 
   @Get('user')
   findUser() {
+    const full = new UserEntity.Builder()
+      .userId(String(new ObjectId()))
+      .age(26)
+      .createdAt(new Date())
+      .height(173.1)
+      .role(ERole.USER)
+      .build();
+
     return this.mongoService.findUser();
   }
 
