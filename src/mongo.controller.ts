@@ -1,5 +1,8 @@
+import { ObjectId } from 'bson';
+import { UserEntity } from './user.entity';
 import { MongoService } from './mongo.service';
-import { Controller, Get, Post } from '@nestjs/common';
+import { Controller, Get, Post, Body } from '@nestjs/common';
+import { agent } from 'supertest';
 
 @Controller()
 export class MongoController {
@@ -11,7 +14,16 @@ export class MongoController {
   }
 
   @Post('user')
-  createUser() {
-    return this.mongoService.createUser();
+  createUser(@Body() body) {
+    console.log(body);
+
+    const payload = new UserEntity.Builder()
+      .userId(String(new ObjectId()))
+      .age(body.age)
+      .height(body.height)
+      .build();
+
+    return payload;
+    // return this.mongoService.createUser();
   }
 }
