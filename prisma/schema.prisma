@@ -1,73 +1,44 @@
 generator client {
   provider = "prisma-client-js"
-  previewFeatures = ["multiSchema"]
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-  schemas  = ["study", "sub"]
-}
-
-enum PROVIDER {
-  KAKAO
-  NAVER
-  GOOGLE
-
-  @@schema("study")
+  provider = "mongodb"
+  url      = env("DATABASE_URL_MONGO")
 }
 
 model User {
-  userId  Int    @id @default(autoincrement()) @map("USER_ID")
-  name    String @default("unknown name") @map("NAME") @db.VarChar(10)
-  email   String @map("EMAIL") @db.VarChar(50)
-  profile String @map("PROFILE") @db.Text
-  provider PROVIDER
+  userId    String   @id @default(auto()) @map("_id") @db.ObjectId
+  age       Int      @db.Int
+  credit    Float    @db.Double
+  createdAt DateTime @default(now()) @db.Timestamp
+  role      UserRole
 
-  posts    Post[]    @relation("USER_HAVE_MANY_POST")
-  userInfo UserInfo? @relation("USER_DETAIL_INFO")
+  posts Post[] @relation("POST_AUTHOR_USER")
 
-  @@unique(fields: [provider, email], name:"provider_email_uni", map: "USER_PROVIDER_EMAIL_UNI")
-  @@index(fields: [provider, email], map: "USER_PROVIDER_EMAIL_INX")
-
-  @@map("USER")
-  @@schema("study")
-}
-
-model Hi {
-  userId  Int    @id @default(autoincrement()) @map("USER_ID")
-  name    String @default("unknown name") @map("NAME") @db.VarChar(10)
-
-  @@map("HI")
-  @@schema("sub")
+  @@map("user")
 }
 
 model Post {
-  postId   Int    @id @default(autoincrement()) @map("POST_ID")
-  content  String @map("CONTENT") @db.Text
-  writerId Int?   @map("WRITER_ID")
+  postId   String @id @default(auto()) @map("_id") @db.ObjectId
+  content  Bytes  @db.BinData
+  comments Json   @db.Json
 
-  writer User? @relation("USER_HAVE_MANY_POST", fields: [writerId], references: [userId], onDelete: SetNull)
+  author   User   @relation("POST_AUTHOR_USER", references: [userId], fields: [authorId])
+  authorId String @db.ObjectId
 
-  @@map("POST")
-  @@schema("study")
+  info PostInfo
+
+  @@map("post")
 }
 
-// 1. user info 상세정보 테이블 대문자 스네이크 케이스로 만들기 
-// 2. 키 int, 몸무게 int, 주소 text, 폰 번호 char, 가입일자 Datetime 넣기
-// 2. USER 와 1대1 관계 맺기 (관계 이름 도메인은 대문자 스네이크로 user detail info 로)
+enum UserRole {
+  ADMIN
+  MANAGER
+  USER
+}
 
-model UserInfo {
-  userId    Int      @id @default(1) @map("USER_ID")
-  height    String   @map("HEIGHT") @db.Char(3)
-  weight    Int      @map("WEIGHT") @db.Integer
-  address   String   @map("ADR") @db.Text
-  createdAt DateTime @default(now()) @db.Timestamptz()
-
-  user User @relation("USER_DETAIL_INFO", fields: [userId], references: [userId], onDelete: SetDefault, onUpdate: Cascade)
-
-  @@index(fields: [height], map: "USER_INFO_IDX", type: Hash)
-
-  @@map("USER_INFO")
-  @@schema("study")
+type PostInfo {
+  title   String
+  hashtag String?
 }
