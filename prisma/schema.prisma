@@ -1,22 +1,36 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  schemas  = ["study", "statistic", "sub", "test"]
+}
+
+enum PROVIDER {
+  KAKAO
+  NAVER
+  GOOGLE
+  ETC
+
+  @@schema("study")
 }
 
 model User {
-  userId  Int    @id @default(autoincrement()) @map("USER_ID")
-  name    String @default("unknown name") @map("NAME") @db.VarChar(10)
-  email   String @default(uuid()) @map("EMAIL") @db.VarChar(50)
-  profile String @map("PROFILE") @db.Text
+  userId   Int      @id @default(autoincrement()) @map("USER_ID")
+  name     String   @default("unknown name") @map("NAME") @db.VarChar(10)
+  provider PROVIDER @default(ETC) @map("PROVIDER")
+  email    String   @default(uuid()) @map("EMAIL") @db.VarChar(50)
+  profile  String   @map("PROFILE") @db.Text
 
   posts    Post[]    @relation("USER_HAVE_MANY_POST")
   userInfo UserInfo? @relation("USER_DETAIL_INFO")
 
+  @@unique(name: "USER_PRO_EMAIL_UNIQ", fields: [provider, email])
   @@map("USER")
+  @@schema("study")
 }
 
 model Post {
@@ -27,6 +41,7 @@ model Post {
   writer User? @relation("USER_HAVE_MANY_POST", fields: [writerId], references: [userId], onDelete: SetNull)
 
   @@map("POST")
+  @@schema("study")
 }
 
 // 1. user info 상세정보 테이블 대문자 스네이크 케이스로 만들기 
@@ -34,14 +49,33 @@ model Post {
 // 2. USER 와 1대1 관계 맺기 (관계 이름 도메인은 대문자 스네이크로 user detail info 로)
 
 model UserInfo {
-  userId    Int      @id @map("USER_ID") @default(1)
-  height    String   @map("HEIGHT") @db.Char(3)
-  weight    Int      @map("WEIGHT") @db.Integer
-  address   String   @map("ADR") @db.Text
-  createdAt DateTime @default(now()) @db.Timestamptz()
-  updatedAt DateTime @updatedAt
+  userId    Int       @id @default(1) @map("USER_ID")
+  height    String    @map("HEIGHT") @db.Char(3)
+  weight    Int       @map("WEIGHT") @db.Integer
+  address   String    @map("ADR") @db.Text
+  createdAt DateTime? @default(now()) @db.Timestamptz()
+  updatedAt DateTime? @default(now()) @updatedAt
 
   user User @relation("USER_DETAIL_INFO", fields: [userId], references: [userId], onDelete: SetDefault, onUpdate: Cascade)
 
   @@map("USER_INFO")
+  @@schema("study")
+}
+
+model TestTable {
+  id Int @id @map("TEST_ID")
+
+  @@schema("test")
+}
+
+model SubTable {
+  id Int @id @map("SUB_ID")
+
+  @@schema("sub")
+}
+
+model Statistic {
+  id Int @id @map("STAC_ID")
+
+  @@schema("statistic")
 }

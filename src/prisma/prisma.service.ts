@@ -15,9 +15,13 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
 
     // 미들웨어
     this.$use(async (params, next) => {
-      console.log(params);
+      const before = Date.now();
 
       const result = await next(params);
+
+      const after = Date.now();
+
+      console.log(`duration ms: ${after - before}`);
 
       return result;
     });

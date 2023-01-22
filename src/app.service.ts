@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker';
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { Prisma, User, UserInfo, Post } from '@prisma/client';
 import { PrismaService } from './prisma/prisma.service';
 
@@ -7,15 +7,50 @@ import { PrismaService } from './prisma/prisma.service';
 export class AppService {
   constructor(private readonly prisma: PrismaService) {}
 
-  getUserWithPost() {
-    return this.prisma.user.findUnique({
+  async getUserWithPost(userId) {
+    const exUser = await this.prisma.user.findUnique({
       where: {
-        userId: 50000,
-      },
-      include: {
-        posts: true,
+        USER_PRO_EMAIL_UNIQ: {
+          provider: 'ETC',
+          email: 'a670c880-cc43-4938-8250-da63e9498aca',
+        },
       },
     });
+
+    if (!exUser || (Array.isArray(exUser) && !exUser.length)) {
+      throw new HttpException('not found', HttpStatus.NOT_FOUND);
+    }
+
+    return exUser;
+  }
+
+  async getUser() {
+    const exUser = await this.prisma.user.findMany({
+      where: {
+        AND: [
+          {
+            userInfo: {
+              height: {
+                in: ['180', '181', '182', '183'],
+              },
+            },
+          },
+          {
+            userInfo: {
+              weight: {
+                gte: 100,
+              },
+            },
+          },
+        ],
+      },
+      include: {
+        userInfo: true,
+      },
+      take: 10,
+    });
+
+    return exUser;
   }
 
   async deleteUser(userId) {
@@ -26,102 +61,48 @@ export class AppService {
     return old;
   }
 
-  async patchUser(payload) {
-    // const newInfo = await this.prisma.userInfo.upsert({
-    //   where: {
-    //     userId: Number(payload.userId),
-    //   },
-    //   update: {
-    //     height: String(payload.height),
-    //   },
-    //   create: {
-    //     userId: Number(payload.userId),
-    //     height: String(payload.height),
-    //     weight: Math.round(Math.random() * 100) + 100,
-    //     address: faker.address.city(),
-    //   },
-    // });
-    const newInfo = await this.prisma.userInfo.update({
-      where: {
-        userId: Number(payload.userId),
-      },
-      data: {
-        weight: {
-          set: Number(payload.weight),
-        },
-      },
-    });
+  async patchUser(payload) {}
 
-    return newInfo;
+  async getPostsWithPagination(page, take) {
+    const [count, posts] = await Promise.all([
+      this.prisma.post.count(),
+      this.prisma.post.findMany({
+        take, // 몇개 불러오는지
+        skip: take * (page - 1),
+        orderBy: {
+          postId: 'desc',
+        },
+      }),
+    ]);
+
+    return {
+      currentPage: page,
+      totalPage: Math.ceil(count / take),
+      posts,
+    };
   }
 
-  async createUser(payload: Prisma.UserCreateInput) {
-    // prisma객체.모댈table.쿼리({ })
-    // 쿼리({}) => {}
-    // const newUser = await this.prisma.user.create({
-    //   data: {
-    //     name: faker.name.firstName(),
-    //     email: faker.datatype.uuid(),
-    //     profile: faker.lorem.sentences(),
-    //     userInfo: {
-    //       create: {
-    //         height: '174',
-    //         weight: 74,
-    //         address: faker.address.city(),
-    //       },
-    //     },
-    //   },
-    //   include: {
-    //     userInfo: true,
-    //   },
-    // });
-    //   data: {
-    //     userId: newUser.userId,
-    //     height: '174',
-    //     weight: 74,
-    //     address: faker.address.city(),
-    //   },
-    // });
+  async createUser(payload: Prisma.UserCreateInput) {}
 
-    // const data = new Array(1000000).fill({}).map((_) => ({
-    //   name: faker.name.firstName().slice(0, 9),
-    //   email: faker.datatype.uuid(),
-    //   profile: faker.lorem.sentences(),
-    // }));
-
-    // const newUser: { count: number } = await this.prisma.user.createMany({
-    //   data,
-    // });
-
-    const newUser: User = await this.prisma.user.create({
-      data: {
-        name: payload.name,
-        email: faker.datatype.uuid(),
-        profile: payload.profile,
-        posts: {
-          connect: [
-            { postId: 5337109 },
-            { postId: 5337108 },
-            { postId: 5337107 },
-          ],
+  async createPost(payload: any) {
+    const result = await this.prisma.$transaction(async (ctx) => {
+      const newUser = await ctx.user.create({
+        data: {
+          name: 'yongsoo!!',
+          email: faker.datatype.uuid(),
+          profile: 'hello world',
         },
-      },
+      });
+
+      const result = await ctx.post.findMany({
+        where: {
+          writerId: newUser.userId,
+        },
+      });
+
+      return [newUser, result];
     });
 
-    return newUser;
-  }
-
-  async createPost(payload: Prisma.PostUncheckedCreateInput) {
-    const newPost: Post = await this.prisma.post.create({
-      data: {
-        content: faker.lorem.paragraph(),
-        // writerId: Math.round(Math.random() * 1000000) + 3,
-      },
-      include: {
-        writer: true,
-      },
-    });
-
-    return newPost;
+    return result;
   }
 }
