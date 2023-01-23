@@ -1,7 +1,6 @@
 type ObjectId = string;
 type Int = number;
 type Float = number;
-type DateTimeISO = string;
 
 export enum ERole {
   USER = 'USER',
@@ -17,7 +16,6 @@ export class UserEntity {
   role: ERole;
 
   constructor(userId, age, createdAt, height, role) {
-    console.log(userId, age, createdAt, height, role);
     if (userId) this.userId = userId;
     if (age) this.age = age;
     if (createdAt) this.createdAt = createdAt;
@@ -64,6 +62,69 @@ export class UserEntity {
         this._createdAt,
         this._height,
         this._role,
+      );
+    }
+  };
+}
+
+export class PostEntity {
+  postId?: ObjectId;
+  title?: string;
+
+  writer?: UserEntity;
+  writerId?: ObjectId;
+
+  comments: Array<{ userId: ObjectId; content: string; createdAt: Date }>;
+
+  constructor(postId, title, writer, writerId, comments) {
+    if (postId) this.postId = postId;
+    if (title) this.title = title;
+    if (writer) this.writer = writer;
+    if (writerId) this.writerId = writerId;
+    if (comments) this.comments = comments;
+  }
+
+  static Builder = class {
+    _postId?: ObjectId;
+    _title?: string;
+    _writer?: UserEntity;
+    _writerId?: ObjectId;
+    _comments: Array<{ userId: ObjectId; content: string; createdAt: Date }>;
+
+    postId(val: ObjectId) {
+      this._postId = val;
+      return this;
+    }
+
+    title(val: string) {
+      this._title = val;
+      return this;
+    }
+
+    writer(val: UserEntity) {
+      this._writer = val;
+      return this;
+    }
+
+    writerId(val: ObjectId) {
+      this._writerId = val;
+      return this;
+    }
+
+    comments(
+      val: Array<{ userId: ObjectId; content: string; createdAt: Date }>,
+    ) {
+      this._comments = val;
+      return this;
+    }
+
+    build() {
+      return new PostEntity(
+        this._postId,
+        this._title,
+        this._writer,
+        this._writerId,
+        this._comments,
       );
     }
   };

@@ -1,5 +1,5 @@
 import { ObjectId } from 'bson';
-import { ERole, UserEntity } from './mongo.builder';
+import { ERole, UserEntity, PostEntity } from './mongo.builder';
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { MongoService } from './mongo.service';
 
@@ -23,5 +23,12 @@ export class MongoController {
   @Post('user')
   createUser(@Body() body) {
     return this.mongoService.createUser(body);
+  }
+
+  @Post('post')
+  createPost(@Body() body) {
+    const payload = new PostEntity.Builder().writerId(body.userId).build();
+
+    return this.mongoService.createPost(payload);
   }
 }
