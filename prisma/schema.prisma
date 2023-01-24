@@ -8,11 +8,13 @@ datasource db {
 }
 
 model User {
-  userId    String   @id @map("_id") @db.ObjectId @default(auto())
+  userId    String   @id @default(auto()) @map("_id") @db.ObjectId
   age       Int      @db.Int
   height    Float    @db.Double
   createdAt DateTime @default(now()) @db.Timestamp
   role      Role
+
+  posts Post[] @relation("USER_UPLOAD_POST")
 
   @@map("user")
 }
@@ -21,4 +23,22 @@ enum Role {
   ADMIN
   USER
   MANAGER
+}
+
+model Post {
+  postId String @id @default(auto()) @map("_id") @db.ObjectId
+  title  String
+
+  comments Comment[]
+
+  writer   User   @relation("USER_UPLOAD_POST", fields: [writerId], references: [userId])
+  writerId String @db.ObjectId
+
+  @@map("post")
+}
+
+type Comment {
+  userId    String   @map("_id") @db.ObjectId
+  content   String?
+  createdAt DateTime @default(now()) @db.Timestamp
 }

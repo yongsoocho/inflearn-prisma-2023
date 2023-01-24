@@ -1,3 +1,4 @@
+import { PostEntity } from './post.entity';
 import { ObjectId } from 'bson';
 import { UserEntity } from './user.entity';
 import { MongoService } from './mongo.service';
@@ -25,5 +26,15 @@ export class MongoController {
 
     return payload;
     // return this.mongoService.createUser();
+  }
+
+  @Post('post')
+  createPost(@Body() body) {
+    const payload = new PostEntity.Builder()
+      .writerId(body.writerId)
+      .comments(body.comments)
+      .build();
+
+    return this.mongoService.createPost(payload);
   }
 }
