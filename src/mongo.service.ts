@@ -25,21 +25,23 @@ export class MongoService {
   }
 
   async createPost(payload) {
-    const newPost = await this.prisma.post.create({
-      data: {
-        title: faker.lorem.sentence(),
-        writerId: payload.writerId,
-        comments: [
-          {
-            userId: payload.writerId,
-            content: faker.lorem.sentences(),
-          },
-          {
-            userId: payload.writerId,
-            content: faker.lorem.sentences(),
-          },
-        ],
-      },
+    const data = new Array(10000).fill({}).map(() => ({
+      title: faker.lorem.sentence(),
+      writerId: payload.writerId,
+      comments: [
+        {
+          userId: payload.writerId,
+          content: faker.lorem.sentences(),
+        },
+        {
+          userId: payload.writerId,
+          content: faker.lorem.sentences(),
+        },
+      ],
+    }));
+
+    const newPost = await this.prisma.post.createMany({
+      data,
     });
 
     return newPost;
