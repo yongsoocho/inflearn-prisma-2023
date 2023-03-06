@@ -1,5 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
-import { Ctx, MessagePattern, Payload } from '@nestjs/microservices';
+import { Controller, Get, Post } from '@nestjs/common';
 import { AppService } from './app.service';
 
 @Controller()
@@ -11,9 +10,5 @@ export class AppController {
     return this.appService.getHello();
   }
 
-  @MessagePattern('notifications')
-  getNoti(@Payload() data, @Ctx() ctx) {
-    console.log(data, ctx);
-    return { data, ctx };
-  }
+  @Post()
 }
