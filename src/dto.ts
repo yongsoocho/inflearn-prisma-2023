@@ -30,7 +30,7 @@ export class UserEntity implements User {
           HttpStatus.BAD_REQUEST,
         );
       }
-      this._userId = n;
+      this._name = n;
       return this;
     }
 
