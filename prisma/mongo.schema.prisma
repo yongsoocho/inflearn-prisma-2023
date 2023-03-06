@@ -1,0 +1,34 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// import { PrismaClient as PrismaClient1 } from '../prisma/generated/client1'
+// import { PrismaClient as PrismaClient2 } from '../prisma/generated/client2'
+
+// const client1 = new PrismaClient1()
+// const client2 = new PrismaClient2()
+
+// prisma generate --schema prisma/schema1.prisma
+// prisma generate --schema prisma/schema2.prisma
+// npx prisma db push --schema prisma/mongo.schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "./node_modules/.prisma/mongo-client"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("MONGO_DATABASE_URL")
+}
+
+enum EVENT_ENUM {
+  CLICK
+  SCROLL
+  EXIT
+}
+
+model Tracking {
+  trackId String     @id @db.ObjectId @map("_id")
+  userId  String     @db.String
+  event   EVENT_ENUM
+}

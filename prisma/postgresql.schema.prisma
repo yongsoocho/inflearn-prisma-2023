@@ -1,0 +1,65 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// import { PrismaClient as PrismaClient1 } from '../prisma/generated/client1'
+// import { PrismaClient as PrismaClient2 } from '../prisma/generated/client2'
+
+// const client1 = new PrismaClient1()
+// const client2 = new PrismaClient2()
+
+// prisma generate --schema prisma/schema1.prisma
+// prisma generate --schema prisma/schema2.prisma
+// npx prisma db push --schema prisma/postgresql.schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "./node_modules/.prisma/postgresql-client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("POSTGRE_DATABASE_URL")
+}
+
+enum SEX_ENUM {
+  MALE
+  FEMALE
+  ETC
+}
+
+model User {
+  userId String   @id @default(uuid()) @db.Uuid
+  email  String   @db.VarChar(30)
+  name   String   @db.VarChar(7)
+  age    Int      @db.Integer @default(0)
+  sex    SEX_ENUM @default(ETC)
+
+  rooms UserRoom[]
+}
+
+model UserRoom {
+  userId String @default(uuid()) @db.Uuid
+  roomId String @default(uuid()) @db.Uuid
+
+  user User @relation(references: [userId], fields: [userId])
+  room Room @relation(references: [roomId], fields: [roomId])
+
+  @@id(fields: [userId, roomId])
+}
+
+model Room {
+  roomId String @id @default(uuid()) @db.Uuid
+  name   String @db.VarChar(10)
+
+  users UserRoom[]
+  chats Chat[]
+}
+
+model Chat {
+  chatId    String   @id @default(uuid()) @db.Uuid
+  roomId    String   @db.Uuid
+  message   String   @db.Text
+  createdAt DateTime @default(now()) @db.Timestamp()
+
+  room Room @relation(references: [roomId], fields: [roomId])
+}
