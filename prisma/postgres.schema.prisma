@@ -1,0 +1,46 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/postgre-client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("POSTGRE_DATABASE_URL")
+}
+
+model User {
+  userId String @id @default(uuid()) @db.Uuid
+  name   String @db.VarChar(20)
+
+  rooms UserEnteredRoom[]
+}
+
+model UserEnteredRoom {
+  userId String @default(uuid()) @db.Uuid
+  roomId String @default(uuid()) @db.Uuid
+
+  user User @relation(fields: [userId], references: [userId])
+  room Room @relation(fields: [roomId], references: [roomId])
+
+  @@id([userId, roomId])
+}
+
+model Room {
+  roomId String @id @default(uuid()) @db.Uuid
+  name   String @db.VarChar(20)
+
+  users    UserEnteredRoom[]
+  messages Message[]
+}
+
+model Message {
+  messageId String   @id @default(uuid()) @db.Uuid
+  roomId    String   @default(uuid()) @db.Uuid
+  message   String   @db.Text
+  createdAt DateTime @default(now()) @db.Timestamp()
+
+  room Room @relation(fields: [roomId], references: [roomId])
+}
