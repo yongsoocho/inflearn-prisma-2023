@@ -1,4 +1,3 @@
-import { UserEntity } from './dto';
 import { Controller, Get, Post } from '@nestjs/common';
 import { AppService } from './app.service';
 
@@ -8,6 +7,16 @@ export class AppController {
 
   @Get()
   getHello() {
-    return new UserEntity.Builder().userId('yongsoo').name('cho');
+    return this.appService.getHello();
+  }
+
+  @Post()
+  chatCreate() {
+    return this.appService.chatCreate();
+  }
+
+  @Get('batch')
+  batchRetrieve() {
+    return this.appService.batchRetrieve();
   }
 }

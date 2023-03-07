@@ -15,7 +15,8 @@ model User {
   userId String @id @default(uuid()) @db.Uuid
   name   String @db.VarChar(20)
 
-  rooms UserEnteredRoom[]
+  rooms    UserEnteredRoom[]
+  messages Message[]
 }
 
 model UserEnteredRoom {
@@ -38,9 +39,11 @@ model Room {
 
 model Message {
   messageId String   @id @default(uuid()) @db.Uuid
+  userId    String   @default(uuid()) @db.Uuid
   roomId    String   @default(uuid()) @db.Uuid
   message   String   @db.Text
   createdAt DateTime @default(now()) @db.Timestamp()
 
+  user User @relation(fields: [userId], references: [userId])
   room Room @relation(fields: [roomId], references: [roomId])
 }

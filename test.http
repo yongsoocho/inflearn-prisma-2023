@@ -1,4 +1,10 @@
-GET http://localhost:3000
+GET http://localhost:3100
 
 ###
 
+POST http://localhost:3100
+Content-Type: application/json
+
+###
+
+GET http://localhost:3100/batch
