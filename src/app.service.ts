@@ -6,43 +6,24 @@ import { PostgresPrismaService } from './prisma/postgres.prisma.service';
 export class AppService {
   constructor(
     private readonly rd: RedisService,
-    private readonly prisma: PostgresPrismaService,
+    private readonly postgrePrisma: PostgresPrismaService,
   ) {}
 
   async getHello() {
-    // return this.rd.redis().get('hello');
-    const usr1 = await this.prisma.user.create({
-      data: {
-        name: 'yongsoo',
-      },
-    });
+    const cacheData = await this.rd.redis().get('message:cache');
 
-    const usr2 = await this.prisma.user.create({
-      data: {
-        name: 'soo-yongs',
-      },
-    });
+    if (cacheData) {
+      console.log('cache!');
+      return JSON.parse(cacheData);
+    }
 
-    const room = await this.prisma.room.create({
-      data: {
-        name: '용수, 수용',
-      },
-    });
+    console.log('non-cache!');
 
-    await this.prisma.userEnteredRoom.createMany({
-      data: [
-        {
-          roomId: room.roomId,
-          userId: usr1.userId,
-        },
-        {
-          roomId: room.roomId,
-          userId: usr2.userId,
-        },
-      ],
-    });
+    const data = await this.postgrePrisma.message.findMany({});
 
-    return [usr1, usr2];
+    await this.rd.redis().set('message:cache', JSON.stringify(data));
+
+    return data;
   }
 
   async chatCreate() {
@@ -68,7 +49,7 @@ export class AppService {
       .exec()
       .then(([[_, data], __]) => data.map((e) => JSON.parse(e)));
 
-    return this.prisma.message.createMany({
+    return this.postgrePrisma.message.createMany({
       data: result,
     });
   }
